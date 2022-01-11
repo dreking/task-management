@@ -10,6 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from 'src/auth/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTaskIdDto } from './dto/get-task-id.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
@@ -23,35 +25,48 @@ export class TasksController {
   constructor(private taskService: TasksService) {}
 
   @Get()
-  getTasks(@Query() filterDto: GetTasksFilterDto): Promise<Task[]> {
-    return this.taskService.getTasks(filterDto);
+  getTasks(
+    @GetUser() user: User,
+    @Query() filterDto: GetTasksFilterDto,
+  ): Promise<Task[]> {
+    return this.taskService.getTasks(filterDto, user);
   }
 
   @Post()
-  createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.taskService.createTask(createTaskDto);
+  createTask(
+    @GetUser() user: User,
+    @Body() createTaskDto: CreateTaskDto,
+  ): Promise<Task> {
+    return this.taskService.createTask(createTaskDto, user);
   }
 
   @Get('/:id')
-  getTaskById(@Param() getTaskIdDto: GetTaskIdDto): Promise<Task> {
+  getTaskById(
+    @GetUser() user: User,
+    @Param() getTaskIdDto: GetTaskIdDto,
+  ): Promise<Task> {
     const { id } = getTaskIdDto;
 
-    return this.taskService.getTaskById(id);
+    return this.taskService.getTaskById(id, user);
   }
 
   @Delete('/:id')
-  deleteTask(@Param() getTaskIdDto: GetTaskIdDto): Promise<void> {
+  deleteTask(
+    @GetUser() user: User,
+    @Param() getTaskIdDto: GetTaskIdDto,
+  ): Promise<void> {
     const { id } = getTaskIdDto;
-    return this.taskService.deleteTask(id);
+    return this.taskService.deleteTask(id, user);
   }
 
   @Patch('/:id/status')
   updateTaskStatus(
+    @GetUser() user: User,
     @Param() getTaskIdDto: GetTaskIdDto,
     @Body() updateTaskStatusDto: UpdateTaskStatusDto,
   ): Promise<Task> {
     const { id } = getTaskIdDto;
     const { status } = updateTaskStatusDto;
-    return this.taskService.updateTaskStatus(id, status);
+    return this.taskService.updateTaskStatus(id, status, user);
   }
 }
